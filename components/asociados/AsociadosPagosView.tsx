@@ -14,9 +14,9 @@ interface AsociadosPagosViewProps {
     asociados: Asociado[];
     pagos: PagoAsociado[];
     recibos: ReciboPagoAsociado[];
-    onSavePago: (pago: PagoAsociado) => void;
-    onDeletePago: (pagoId: string) => void;
-    onSaveRecibo: (recibo: ReciboPagoAsociado) => void;
+    onSavePago: (pago: PagoAsociado) => Promise<void>;
+    onDeletePago: (pagoId: string) => Promise<void>;
+    onSaveRecibo: (recibo: ReciboPagoAsociado) => Promise<void>;
     companyInfo: CompanyInfo;
     permissions: Permissions;
 }
@@ -67,8 +67,8 @@ const AsociadosPagosView: React.FC<AsociadosPagosViewProps> = (props) => {
         setIsPagoModalOpen(true);
     };
 
-    const handleSavePago = (pago: PagoAsociado) => {
-        onSavePago(pago);
+    const handleSavePago = async (pago: PagoAsociado) => {
+        await onSavePago(pago);
         setIsPagoModalOpen(false);
     };
 
@@ -183,9 +183,9 @@ const AsociadosPagosView: React.FC<AsociadosPagosViewProps> = (props) => {
                                                     variant="danger" 
                                                     size="sm" 
                                                     className="ml-4 !p-2 flex-shrink-0"
-                                                    onClick={() => {
+                                                    onClick={async () => {
                                                         if (window.confirm(`¿Está seguro de que desea eliminar la deuda por "${p.concepto}"? Esta acción no se puede deshacer.`)) {
-                                                            onDeletePago(p.id);
+                                                            await onDeletePago(p.id);
                                                         }
                                                     }}
                                                     title="Eliminar Deuda"

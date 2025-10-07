@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { ShippingType, Permissions } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -9,8 +7,8 @@ import ShippingTypeFormModal from './ShippingTypeFormModal';
 
 interface ShippingTypesViewProps {
     shippingTypes: ShippingType[];
-    onSave: (shippingType: ShippingType) => void;
-    onDelete: (shippingTypeId: string) => void;
+    onSave: (shippingType: ShippingType) => Promise<void>;
+    onDelete: (shippingTypeId: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -23,8 +21,8 @@ const ShippingTypesView: React.FC<ShippingTypesViewProps> = ({ shippingTypes, on
         setIsModalOpen(true);
     };
 
-    const handleSave = (shippingType: ShippingType) => {
-        onSave(shippingType);
+    const handleSave = async (shippingType: ShippingType) => {
+        await onSave(shippingType);
         setIsModalOpen(false);
     };
 
@@ -64,7 +62,11 @@ const ShippingTypesView: React.FC<ShippingTypesViewProps> = ({ shippingTypes, on
                                             <Button variant="secondary" size="sm" onClick={() => handleOpenModal(st)}><EditIcon className="w-4 h-4"/></Button>
                                         )}
                                         {permissions['shipping-types.delete'] && (
-                                            <Button variant="danger" size="sm" onClick={() => onDelete(st.id)}><TrashIcon className="w-4 h-4"/></Button>
+                                            <Button variant="danger" size="sm" onClick={async () => {
+                                                if (window.confirm('¿Está seguro de que desea eliminar este tipo de envío? Esta acción no se puede deshacer.')) {
+                                                    await onDelete(st.id);
+                                                }
+                                            }}><TrashIcon className="w-4 h-4"/></Button>
                                         )}
                                     </td>
                                 </tr>

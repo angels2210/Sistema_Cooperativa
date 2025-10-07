@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { Transaction } from './LibroContableView';
 import { Permissions, Expense, ExpenseCategory, Office, User, PaymentMethod, CompanyInfo, Supplier, PaymentStatus, ShippingStatus } from '../../types';
@@ -35,8 +33,8 @@ interface TransactionsModalProps {
     onClose: () => void;
     transactions: Transaction[];
     permissions: Permissions;
-    onSaveExpense: (expense: Expense) => void;
-    onDeleteExpense: (expenseId: string) => void;
+    onSaveExpense: (expense: Expense) => Promise<void>;
+    onDeleteExpense: (expenseId: string) => Promise<void>;
     expenseCategories: ExpenseCategory[];
     offices: Office[];
     paymentMethods: PaymentMethod[];
@@ -73,8 +71,8 @@ const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, onClose, 
         setIsExpenseModalOpen(true);
     };
 
-    const handleSaveExpense = (expense: Expense) => {
-        onSaveExpense(expense);
+    const handleSaveExpense = async (expense: Expense) => {
+        await onSaveExpense(expense);
         setIsExpenseModalOpen(false);
     };
     
@@ -137,7 +135,11 @@ const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, onClose, 
                                     </td>
                                     <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
                                         {t.type === 'Gasto' && permissions['libro-contable.edit'] && <Button variant="secondary" size="sm" onClick={() => handleOpenExpenseModal(t.originalDoc as Expense)}><EditIcon className="w-4 h-4"/></Button>}
-                                        {t.type === 'Gasto' && permissions['libro-contable.delete'] && <Button variant="danger" size="sm" onClick={() => onDeleteExpense(t.originalDoc.id)}><TrashIcon className="w-4 h-4"/></Button>}
+                                        {t.type === 'Gasto' && permissions['libro-contable.delete'] && <Button variant="danger" size="sm" onClick={async () => {
+                                            if (window.confirm('¿Está seguro de que desea eliminar este gasto? Esta acción no se puede deshacer.')) {
+                                                await onDeleteExpense(t.originalDoc.id);
+                                            }
+                                        }}><TrashIcon className="w-4 h-4"/></Button>}
                                     </td>
                                 </tr>
                             ))}

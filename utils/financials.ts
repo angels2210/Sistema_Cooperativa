@@ -14,24 +14,34 @@ export const calculateFinancialDetails = (guide: ShippingGuide, companyInfo: Com
         return { freight: 0, insuranceCost: 0, handling: 0, discount: 0, subtotal: 0, ipostel: 0, iva: 0, igtf: 0, total: 0 };
     }
 
+    const costPerKg = parseFloat(String(companyInfo.costPerKg)) || 0;
+
     // Calculate total chargeable weight (max of real vs. volumetric)
     const totalWeight = guide.merchandise.reduce((acc, item) => {
-        const realWeight = Number(item.weight) || 0;
-        const volumetricWeight = (Number(item.length) * Number(item.width) * Number(item.height)) / 5000;
-        return acc + Math.max(realWeight, volumetricWeight) * (Number(item.quantity) || 1);
+        const realWeight = parseFloat(String(item.weight)) || 0;
+        const length = parseFloat(String(item.length)) || 0;
+        const width = parseFloat(String(item.width)) || 0;
+        const height = parseFloat(String(item.height)) || 0;
+        const quantity = parseFloat(String(item.quantity)) || 1;
+
+        const volumetricWeight = (length * width * height) / 5000;
+        return acc + Math.max(realWeight, volumetricWeight) * quantity;
     }, 0);
 
-    const freight = totalWeight * (companyInfo.costPerKg || 0);
+    const freight = totalWeight * costPerKg;
 
     // Calculate discount from freight value
+    const discountPercentage = parseFloat(String(guide.discountPercentage)) || 0;
     const discountAmount = guide.hasDiscount
-        ? freight * ((Number(guide.discountPercentage) || 0) / 100)
+        ? freight * (discountPercentage / 100)
         : 0;
 
     const freightAfterDiscount = freight - discountAmount;
     
     // Insurance is calculated on the declared value
-    const insuranceCost = guide.hasInsurance ? (Number(guide.declaredValue) || 0) * ((Number(guide.insurancePercentage) || 0) / 100) : 0;
+    const declaredValue = parseFloat(String(guide.declaredValue)) || 0;
+    const insurancePercentage = parseFloat(String(guide.insurancePercentage)) || 0;
+    const insuranceCost = guide.hasInsurance ? declaredValue * (insurancePercentage / 100) : 0;
     
     const handling = totalWeight > 0 ? 10 : 0; // A fixed handling fee
 
@@ -39,13 +49,17 @@ export const calculateFinancialDetails = (guide: ShippingGuide, companyInfo: Com
     
     // IPOSTEL is calculated based on the freight value for packages under a certain weight.
     const freightForIpostel = guide.merchandise.reduce((acc, item) => {
-        const realWeight = Number(item.weight) || 0;
-        const volumetricWeight = (Number(item.length) * Number(item.width) * Number(item.height)) / 5000;
+        const realWeight = parseFloat(String(item.weight)) || 0;
+        const length = parseFloat(String(item.length)) || 0;
+        const width = parseFloat(String(item.width)) || 0;
+        const height = parseFloat(String(item.height)) || 0;
+        const quantity = parseFloat(String(item.quantity)) || 1;
+
+        const volumetricWeight = (length * width * height) / 5000;
         const chargeableWeightPerUnit = Math.max(realWeight, volumetricWeight);
 
         if (chargeableWeightPerUnit > 0 && chargeableWeightPerUnit <= 30.99) {
-            const quantity = Number(item.quantity) || 1;
-            const itemFreight = (chargeableWeightPerUnit * (companyInfo.costPerKg || 0)) * quantity;
+            const itemFreight = (chargeableWeightPerUnit * costPerKg) * quantity;
             return acc + itemFreight;
         }
         return acc;
@@ -77,8 +91,12 @@ export const calculateInvoiceChargeableWeight = (invoice: Invoice): number => {
         return 0;
     }
     return invoice.guide.merchandise.reduce((acc, item) => {
-        const realWeight = Number(item.weight) || 0;
-        const volumetricWeight = (Number(item.length) * Number(item.width) * Number(item.height)) / 5000;
-        return acc + Math.max(realWeight, volumetricWeight) * (Number(item.quantity) || 1);
+        const realWeight = parseFloat(String(item.weight)) || 0;
+        const length = parseFloat(String(item.length)) || 0;
+        const width = parseFloat(String(item.width)) || 0;
+        const height = parseFloat(String(item.height)) || 0;
+        const quantity = parseFloat(String(item.quantity)) || 1;
+        const volumetricWeight = (length * width * height) / 5000;
+        return acc + Math.max(realWeight, volumetricWeight) * quantity;
     }, 0);
 };

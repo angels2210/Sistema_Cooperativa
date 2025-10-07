@@ -1,12 +1,10 @@
 
-
 import React from 'react';
 import { Invoice, Client, Category, Office, ShippingType, PaymentMethod, CompanyInfo, User } from '../../types';
 import InvoiceForm from './InvoiceForm';
 
 interface EditInvoiceViewProps {
     invoice: Invoice;
-    // FIX: Corrected the onSaveInvoice prop type to match what InvoiceForm expects for updating invoices.
     onSaveInvoice: (invoice: Invoice) => Promise<Invoice | null>;
     categories: Category[];
     clients: Client[];

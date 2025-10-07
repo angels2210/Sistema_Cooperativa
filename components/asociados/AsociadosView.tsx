@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Asociado, Vehicle, Certificado, PagoAsociado, ReciboPagoAsociado, Permissions, CompanyInfo } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -10,19 +11,19 @@ import { useToast } from '../ui/ToastProvider';
 
 interface AsociadosGestionViewProps {
     asociados: Asociado[];
-    onSaveAsociado: (asociado: Asociado) => void;
-    onDeleteAsociado: (asociadoId: string) => void;
+    onSaveAsociado: (asociado: Asociado) => Promise<void>;
+    onDeleteAsociado: (asociadoId: string) => Promise<void>;
     vehicles: Vehicle[];
-    onSaveVehicle: (vehicle: Vehicle) => void;
-    onDeleteVehicle: (vehicleId: string) => void;
+    onSaveVehicle: (vehicle: Vehicle) => Promise<void>;
+    onDeleteVehicle: (vehicleId: string) => Promise<void>;
     certificados: Certificado[];
-    onSaveCertificado: (certificado: Certificado) => void;
-    onDeleteCertificado: (certificadoId: string) => void;
+    onSaveCertificado: (certificado: Certificado) => Promise<void>;
+    onDeleteCertificado: (certificadoId: string) => Promise<void>;
     pagos: PagoAsociado[];
-    onSavePago: (pago: PagoAsociado) => void;
-    onDeletePago: (pagoId: string) => void;
+    onSavePago: (pago: PagoAsociado) => Promise<void>;
+    onDeletePago: (pagoId: string) => Promise<void>;
     recibos: ReciboPagoAsociado[];
-    onSaveRecibo: (recibo: ReciboPagoAsociado) => void;
+    onSaveRecibo: (recibo: ReciboPagoAsociado) => Promise<void>;
     permissions: Permissions;
     companyInfo: CompanyInfo;
 }

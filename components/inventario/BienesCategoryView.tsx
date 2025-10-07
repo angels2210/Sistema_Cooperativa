@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState } from 'react';
 import { AssetCategory, Permissions } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -11,8 +7,8 @@ import BienesCategoryFormModal from './BienesCategoryFormModal';
 
 interface BienesCategoryViewProps {
     categories: AssetCategory[];
-    onSave: (category: AssetCategory) => void;
-    onDelete: (categoryId: string) => void;
+    onSave: (category: AssetCategory) => Promise<void>;
+    onDelete: (categoryId: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -25,8 +21,8 @@ const BienesCategoryView: React.FC<BienesCategoryViewProps> = ({ categories, onS
         setIsModalOpen(true);
     };
 
-    const handleSave = (category: AssetCategory) => {
-        onSave(category);
+    const handleSave = async (category: AssetCategory) => {
+        await onSave(category);
         setIsModalOpen(false);
     };
 
@@ -81,7 +77,11 @@ const BienesCategoryView: React.FC<BienesCategoryViewProps> = ({ categories, onS
                                             <Button variant="secondary" size="sm" onClick={() => handleOpenModal(cat)}><EditIcon className="w-4 h-4"/></Button>
                                         )}
                                         {permissions['bienes-categorias.delete'] && (
-                                            <Button variant="danger" size="sm" onClick={() => onDelete(cat.id)}><TrashIcon className="w-4 h-4"/></Button>
+                                            <Button variant="danger" size="sm" onClick={async () => {
+                                                if (window.confirm('¿Está seguro de que desea eliminar esta categoría de bien? Esta acción no se puede deshacer.')) {
+                                                    await onDelete(cat.id);
+                                                }
+                                            }}><TrashIcon className="w-4 h-4"/></Button>
                                         )}
                                     </td>
                                 </tr>

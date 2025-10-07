@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 import { ExpenseCategory, Permissions } from '../../types';
@@ -12,8 +10,8 @@ interface ExpenseCategoryManagementModalProps {
     isOpen: boolean;
     onClose: () => void;
     expenseCategories: ExpenseCategory[];
-    onSaveExpenseCategory: (category: ExpenseCategory) => void;
-    onDeleteExpenseCategory: (categoryId: string) => void;
+    onSaveExpenseCategory: (category: ExpenseCategory) => Promise<void>;
+    onDeleteExpenseCategory: (categoryId: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -27,8 +25,8 @@ const ExpenseCategoryManagementModal: React.FC<ExpenseCategoryManagementModalPro
         setIsFormModalOpen(true);
     };
 
-    const handleSave = (category: ExpenseCategory) => {
-        onSaveExpenseCategory(category);
+    const handleSave = async (category: ExpenseCategory) => {
+        await onSaveExpenseCategory(category);
         // The form modal closes itself on save
     };
 
@@ -44,7 +42,11 @@ const ExpenseCategoryManagementModal: React.FC<ExpenseCategoryManagementModalPro
                             <span className="text-gray-700 dark:text-gray-200 font-medium">{cat.name}</span>
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
                                 {permissions['libro-contable.edit'] && <Button variant="secondary" size="sm" onClick={() => handleOpenFormModal(cat)}><EditIcon className="w-4 h-4"/></Button>}
-                                {permissions['libro-contable.delete'] && <Button variant="danger" size="sm" onClick={() => onDeleteExpenseCategory(cat.id)}><TrashIcon className="w-4 h-4"/></Button>}
+                                {permissions['libro-contable.delete'] && <Button variant="danger" size="sm" onClick={async () => {
+                                    if (window.confirm('¿Está seguro de que desea eliminar esta categoría de gasto? Esta acción no se puede deshacer.')) {
+                                        await onDeleteExpenseCategory(cat.id);
+                                    }
+                                }}><TrashIcon className="w-4 h-4"/></Button>}
                             </div>
                         </div>
                     ))}

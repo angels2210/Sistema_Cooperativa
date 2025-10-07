@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Asset, Office, Permissions, AssetCategory } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -22,8 +21,8 @@ interface BienesViewProps {
     assets: Asset[];
     offices: Office[];
     assetCategories: AssetCategory[];
-    onSave: (asset: Asset) => void;
-    onDelete: (assetId: string) => void;
+    onSave: (asset: Asset) => Promise<void>;
+    onDelete: (assetId: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -75,8 +74,8 @@ const BienesView: React.FC<BienesViewProps> = ({ assets, offices, assetCategorie
         setIsModalOpen(true);
     };
 
-    const handleSave = (asset: Asset) => {
-        onSave(asset);
+    const handleSave = async (asset: Asset) => {
+        await onSave(asset);
         setIsModalOpen(false);
     };
 
@@ -194,7 +193,11 @@ const BienesView: React.FC<BienesViewProps> = ({ assets, offices, assetCategorie
                                     </td>
                                     <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
                                         {permissions['inventario-bienes.edit'] && <Button variant="secondary" size="sm" onClick={() => handleOpenModal(asset)}><EditIcon className="w-4 h-4"/></Button>}
-                                        {permissions['inventario-bienes.delete'] && <Button variant="danger" size="sm" onClick={() => onDelete(asset.id)}><TrashIcon className="w-4 h-4"/></Button>}
+                                        {permissions['inventario-bienes.delete'] && <Button variant="danger" size="sm" onClick={async () => {
+                                            if (window.confirm(`¿Está seguro de que desea eliminar el bien '${asset.name}'? Esta acción no se puede deshacer.`)) {
+                                                await onDelete(asset.id);
+                                            }
+                                        }}><TrashIcon className="w-4 h-4"/></Button>}
                                     </td>
                                 </tr>
                             ))}

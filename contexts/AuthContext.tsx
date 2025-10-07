@@ -23,6 +23,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
     const WARNING_DURATION_SECONDS = 20; // 20 seconds countdown
     const [countdown, setCountdown] = useState(WARNING_DURATION_SECONDS);
+    const [expiryTime, setExpiryTime] = useState<number | null>(null);
 
     const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -33,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const showWarningModal = useCallback(() => {
+        setExpiryTime(Date.now() + WARNING_DURATION_SECONDS * 1000);
         setCountdown(WARNING_DURATION_SECONDS);
         setIsWarningModalOpen(true);
     }, []);
@@ -58,19 +60,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
             clearTimers();
             setIsWarningModalOpen(false);
+            setExpiryTime(null);
         }
     }, [isAuthenticated, resetIdleTimer]);
 
     useEffect(() => {
-        if (isWarningModalOpen) {
+        if (isWarningModalOpen && expiryTime) {
             countdownTimerRef.current = setInterval(() => {
-                setCountdown(prev => (prev > 0 ? prev - 1 : 0));
+                const now = Date.now();
+                const remainingSeconds = Math.round((expiryTime - now) / 1000);
+                setCountdown(Math.max(0, remainingSeconds));
             }, 1000);
         }
         return () => {
             if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
         };
-    }, [isWarningModalOpen]);
+    }, [isWarningModalOpen, expiryTime]);
 
     const handleExtendSession = useCallback(async () => {
         try {
@@ -80,7 +85,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // If successful, reset everything
             if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
             setIsWarningModalOpen(false);
-            setCountdown(WARNING_DURATION_SECONDS);
+            setExpiryTime(null);
             resetIdleTimer();
         } catch (error) {
             // If the token expired just as they clicked, the API call will fail.

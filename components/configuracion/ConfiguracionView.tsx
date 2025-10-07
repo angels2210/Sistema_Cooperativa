@@ -1,7 +1,4 @@
 
-
-
-
 import React from 'react';
 import { CompanyInfo, User, Role, Permissions, Office } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -18,21 +15,21 @@ import { apiFetch } from '../../utils/api';
 
 interface ConfiguracionViewProps {
     companyInfo: CompanyInfo;
-    onCompanyInfoSave: (info: CompanyInfo) => void;
+    onCompanyInfoSave: (info: CompanyInfo) => Promise<void>;
     users: User[];
     roles: Role[];
     offices: Office[];
-    onSaveUser: (user: User) => void;
-    onDeleteUser: (userId: string) => void;
+    onSaveUser: (user: User) => Promise<void>;
+    onDeleteUser: (userId: string) => Promise<void>;
     permissions: Permissions;
     currentUser: User;
-    onSaveRole: (role: Role) => void;
-    onDeleteRole: (roleId: string) => void;
-    onUpdateRolePermissions: (roleId: string, permissions: Permissions) => void;
+    onSaveRole: (role: Role) => Promise<void>;
+    onDeleteRole: (roleId: string) => Promise<void>;
+    onUpdateRolePermissions: (roleId: string, permissions: Permissions) => Promise<void>;
 }
 
 
-const CompanyInfoSettings: React.FC<{ info: CompanyInfo; onSave: (info: CompanyInfo) => void; canEdit: boolean }> = ({ info, onSave, canEdit }) => {
+const CompanyInfoSettings: React.FC<{ info: CompanyInfo; onSave: (info: CompanyInfo) => Promise<void>; canEdit: boolean }> = ({ info, onSave, canEdit }) => {
     const [formData, setFormData] = React.useState(info);
     const logoFileInputRef = React.useRef<HTMLInputElement>(null);
     const bgFileInputRef = React.useRef<HTMLInputElement>(null);
@@ -80,9 +77,9 @@ const CompanyInfoSettings: React.FC<{ info: CompanyInfo; onSave: (info: CompanyI
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onSave(formData);
+        await onSave(formData);
     };
 
     return (

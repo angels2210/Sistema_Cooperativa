@@ -13,8 +13,8 @@ interface UserManagementProps {
     users: User[];
     roles: Role[];
     offices: Office[];
-    onSaveUser: (user: User) => void;
-    onDeleteUser: (userId: string) => void;
+    onSaveUser: (user: User) => Promise<void>;
+    onDeleteUser: (userId: string) => Promise<void>;
     currentUser: User;
     userPermissions: Permissions;
 }
@@ -49,8 +49,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, roles, offices, 
         setIsUserModalOpen(true);
     };
 
-    const handleSaveUser = (user: User) => {
-        onSaveUser(user);
+    const handleSaveUser = async (user: User) => {
+        await onSaveUser(user);
         setIsUserModalOpen(false);
     };
 
@@ -129,7 +129,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, roles, offices, 
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{getOfficeName(user.officeId)}</td>
                                     <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
                                         <Button variant="secondary" size="sm" onClick={() => handleOpenUserModal(user)} disabled={!isEditable}><EditIcon className="w-4 h-4"/></Button>
-                                        <Button variant="danger" size="sm" onClick={() => onDeleteUser(user.id)} disabled={!isDeletable}><TrashIcon className="w-4 h-4"/></Button>
+                                        <Button variant="danger" size="sm" onClick={async () => {
+                                            if (window.confirm(`¿Está seguro de que desea eliminar al usuario '${user.name}'? Esta acción no se puede deshacer.`)) {
+                                                await onDeleteUser(user.id);
+                                            }
+                                        }} disabled={!isDeletable}><TrashIcon className="w-4 h-4"/></Button>
                                     </td>
                                 </tr>
                             )})}

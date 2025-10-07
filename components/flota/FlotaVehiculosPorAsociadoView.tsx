@@ -13,11 +13,11 @@ interface FlotaVehiculosPorAsociadoViewProps {
     invoices: Invoice[];
     offices: Office[];
     clients: Client[];
-    onUnassignInvoice: (invoiceId: string) => void;
-    onSaveVehicle: (vehicle: Vehicle) => void;
-    onDeleteVehicle: (vehicleId: string) => void;
-    onFinalizeTrip: (vehicleId: string) => void;
-    onUndoDispatch: (vehicleId: string) => void;
+    onUnassignInvoice: (invoiceId: string) => Promise<void>;
+    onSaveVehicle: (vehicle: Vehicle) => Promise<void>;
+    onDeleteVehicle: (vehicleId: string) => Promise<void>;
+    onFinalizeTrip: (vehicleId: string) => Promise<void>;
+    onUndoDispatch: (vehicleId: string) => Promise<void>;
     permissions: Permissions;
     companyInfo: CompanyInfo;
 }
@@ -52,8 +52,8 @@ const FlotaVehiculosPorAsociadoView: React.FC<FlotaVehiculosPorAsociadoViewProps
         setIsVehicleModalOpen(true);
     };
 
-    const handleSave = (vehicle: Vehicle) => {
-        onSaveVehicle(vehicle);
+    const handleSave = async (vehicle: Vehicle) => {
+        await onSaveVehicle(vehicle);
         setIsVehicleModalOpen(false);
     };
     
@@ -132,7 +132,7 @@ const FlotaVehiculosPorAsociadoView: React.FC<FlotaVehiculosPorAsociadoViewProps
                                                             <span>Factura #{inv.invoiceNumber}</span>
                                                             {vehicle.status === 'Disponible' && (
                                                                 <button 
-                                                                    onClick={() => onUnassignInvoice(inv.id)}
+                                                                    onClick={async () => await onUnassignInvoice(inv.id)}
                                                                     className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                                                     title="Remover envío del vehículo"
                                                                 >
@@ -150,7 +150,11 @@ const FlotaVehiculosPorAsociadoView: React.FC<FlotaVehiculosPorAsociadoViewProps
                                             {vehicle.status === 'Disponible' && (
                                                 <>
                                                     {permissions['flota.edit'] && <Button size="sm" variant="secondary" onClick={() => handleOpenVehicleModal(vehicle)} title="Editar Vehículo"><EditIcon className="w-4 h-4" /></Button>}
-                                                    {permissions['flota.delete'] && <Button size="sm" variant="danger" onClick={() => onDeleteVehicle(vehicle.id)} title="Eliminar Vehículo"><TrashIcon className="w-4 h-4" /></Button>}
+                                                    {permissions['flota.delete'] && <Button size="sm" variant="danger" onClick={async () => {
+                                                        if (window.confirm(`¿Está seguro de que desea eliminar el vehículo '${vehicle.modelo} - ${vehicle.placa}'? Esta acción no se puede deshacer.`)) {
+                                                            await onDeleteVehicle(vehicle.id);
+                                                        }
+                                                    }} title="Eliminar Vehículo"><TrashIcon className="w-4 h-4" /></Button>}
                                                 </>
                                             )}
                                             

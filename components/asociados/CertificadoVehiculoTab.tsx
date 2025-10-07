@@ -11,11 +11,11 @@ import { useToast } from '../ui/ToastProvider';
 interface CertificadoVehiculoTabProps {
     asociadoId: string;
     vehicles: Vehicle[];
-    onSaveVehicle: (vehicle: Vehicle) => void;
-    onDeleteVehicle: (vehicleId: string) => void;
+    onSaveVehicle: (vehicle: Vehicle) => Promise<void>;
+    onDeleteVehicle: (vehicleId: string) => Promise<void>;
     certificados: Certificado[];
-    onSaveCertificado: (certificado: Certificado) => void;
-    onDeleteCertificado: (certificadoId: string) => void;
+    onSaveCertificado: (certificado: Certificado) => Promise<void>;
+    onDeleteCertificado: (certificadoId: string) => Promise<void>;
 }
 
 const emptyVehicle: Partial<Vehicle> = {
@@ -116,17 +116,17 @@ const CertificadoVehiculoTab: React.FC<CertificadoVehiculoTabProps> = (props) =>
         setSelectedVehicle(prev => prev ? ({ ...prev, [name]: type === 'number' ? Number(value) : value }) : null);
     };
 
-    const handleVehicleFormSubmit = (e: React.FormEvent) => {
+    const handleVehicleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (selectedVehicle) {
-            onSaveVehicle(selectedVehicle as Vehicle);
+            await onSaveVehicle(selectedVehicle as Vehicle);
             handleBackToList();
         }
     };
     
-    const handleCertificateStatusChange = (cert: Certificado, newStatus: Certificado['status']) => {
+    const handleCertificateStatusChange = async (cert: Certificado, newStatus: Certificado['status']) => {
         const updatedCert = { ...cert, status: newStatus };
-        onSaveCertificado(updatedCert);
+        await onSaveCertificado(updatedCert);
         addToast({ type: 'info', title: 'Estado Actualizado', message: `El estado del certificado se cambió a ${newStatus}.`});
     };
 
@@ -136,8 +136,8 @@ const CertificadoVehiculoTab: React.FC<CertificadoVehiculoTabProps> = (props) =>
         setIsCertModalOpen(true);
     };
 
-    const handleSaveCert = (cert: Certificado) => {
-        onSaveCertificado(cert);
+    const handleSaveCert = async (cert: Certificado) => {
+        await onSaveCertificado(cert);
         setIsCertModalOpen(false);
     };
     
@@ -159,7 +159,11 @@ const CertificadoVehiculoTab: React.FC<CertificadoVehiculoTabProps> = (props) =>
                                     </div>
                                     <div className="flex gap-2">
                                         <Button variant="secondary" size="sm" onClick={() => handleSelectVehicle(v)}><EditIcon className="w-4 h-4" /></Button>
-                                        <Button variant="danger" size="sm" onClick={() => onDeleteVehicle(v.id)}><TrashIcon className="w-4 h-4" /></Button>
+                                        <Button variant="danger" size="sm" onClick={async () => {
+                                            if (window.confirm(`¿Está seguro de que desea eliminar el vehículo con placa '${v.placa}'? Esta acción no se puede deshacer.`)) {
+                                                await onDeleteVehicle(v.id);
+                                            }
+                                        }}><TrashIcon className="w-4 h-4" /></Button>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-3 text-sm">
@@ -273,7 +277,7 @@ const CertificadoVehiculoTab: React.FC<CertificadoVehiculoTabProps> = (props) =>
                                             <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{c.descripcion}</td>
                                             <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{c.fechaInicio}</td>
                                             <td className="px-4 py-2">
-                                                <Select label="" value={c.status} onChange={(e) => handleCertificateStatusChange(c, e.target.value as Certificado['status'])}>
+                                                <Select label="" value={c.status} onChange={async (e) => await handleCertificateStatusChange(c, e.target.value as Certificado['status'])}>
                                                     <option value="Activo">Activo</option>
                                                     <option value="Inactivo">Inactivo</option>
                                                     <option value="Suspendido">Suspendido</option>
@@ -282,7 +286,11 @@ const CertificadoVehiculoTab: React.FC<CertificadoVehiculoTabProps> = (props) =>
                                             </td>
                                             <td className="px-4 py-2 text-right space-x-2">
                                                 <Button variant="secondary" size="sm" type="button" onClick={() => handleOpenCertModal(selectedVehicle.id!, c)}><EditIcon className="w-4 h-4" /></Button>
-                                                <Button variant="danger" size="sm" type="button" onClick={() => onDeleteCertificado(c.id)}><TrashIcon className="w-4 h-4" /></Button>
+                                                <Button variant="danger" size="sm" type="button" onClick={async () => {
+                                                    if (window.confirm('¿Está seguro de que desea eliminar este certificado? Esta acción no se puede deshacer.')) {
+                                                        await onDeleteCertificado(c.id);
+                                                    }
+                                                }}><TrashIcon className="w-4 h-4" /></Button>
                                             </td>
                                         </tr>
                                     ))}

@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { Office, Permissions } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -9,8 +7,8 @@ import OfficeFormModal from './OfficeFormModal';
 
 interface OfficesViewProps {
     offices: Office[];
-    onSave: (office: Office) => void;
-    onDelete: (officeId: string) => void;
+    onSave: (office: Office) => Promise<void>;
+    onDelete: (officeId: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -23,8 +21,8 @@ const OfficesView: React.FC<OfficesViewProps> = ({ offices, onSave, onDelete, pe
         setIsModalOpen(true);
     };
 
-    const handleSave = (office: Office) => {
-        onSave(office);
+    const handleSave = async (office: Office) => {
+        await onSave(office);
         setIsModalOpen(false);
     };
 
@@ -70,7 +68,11 @@ const OfficesView: React.FC<OfficesViewProps> = ({ offices, onSave, onDelete, pe
                                             <Button variant="secondary" size="sm" onClick={() => handleOpenModal(office)}><EditIcon className="w-4 h-4"/></Button>
                                         )}
                                         {permissions['offices.delete'] && (
-                                            <Button variant="danger" size="sm" onClick={() => onDelete(office.id)}><TrashIcon className="w-4 h-4"/></Button>
+                                            <Button variant="danger" size="sm" onClick={async () => {
+                                                if (window.confirm('¿Está seguro de que desea eliminar esta oficina? Esta acción no se puede deshacer.')) {
+                                                    await onDelete(office.id);
+                                                }
+                                            }}><TrashIcon className="w-4 h-4"/></Button>
                                         )}
                                     </td>
                                 </tr>

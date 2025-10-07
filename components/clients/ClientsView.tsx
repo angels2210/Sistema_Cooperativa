@@ -10,8 +10,8 @@ import Input from '../ui/Input';
 
 interface ClientsViewProps {
     clients: Client[];
-    onSave: (client: Client) => void;
-    onDelete: (clientId: string) => void;
+    onSave: (client: Client) => Promise<void>;
+    onDelete: (clientId: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -45,8 +45,8 @@ const ClientsView: React.FC<ClientsViewProps> = ({ clients, onSave, onDelete, pe
         setIsModalOpen(true);
     };
 
-    const handleSaveClient = (client: Client) => {
-        onSave(client);
+    const handleSaveClient = async (client: Client) => {
+        await onSave(client);
         setIsModalOpen(false);
     };
 
@@ -103,7 +103,11 @@ const ClientsView: React.FC<ClientsViewProps> = ({ clients, onSave, onDelete, pe
                                             <Button variant="secondary" size="sm" onClick={() => handleOpenModal(client)}><EditIcon className="w-4 h-4"/></Button>
                                         )}
                                         {permissions['clientes.delete'] && (
-                                            <Button variant="danger" size="sm" onClick={() => onDelete(client.id)}><TrashIcon className="w-4 h-4"/></Button>
+                                            <Button variant="danger" size="sm" onClick={async () => {
+                                                if (window.confirm('¿Está seguro de que desea eliminar este cliente? Esta acción no se puede deshacer.')) {
+                                                    await onDelete(client.id);
+                                                }
+                                            }}><TrashIcon className="w-4 h-4"/></Button>
                                         )}
                                     </td>
                                 </tr>

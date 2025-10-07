@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { Supplier, Permissions } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -12,8 +10,8 @@ import Input from '../ui/Input';
 
 interface SuppliersViewProps {
     suppliers: Supplier[];
-    onSave: (supplier: Supplier) => void;
-    onDelete: (supplierId: string) => void;
+    onSave: (supplier: Supplier) => Promise<void>;
+    onDelete: (supplierId: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -46,8 +44,8 @@ const SuppliersView: React.FC<SuppliersViewProps> = ({ suppliers, onSave, onDele
         setIsModalOpen(true);
     };
 
-    const handleSaveSupplier = (supplier: Supplier) => {
-        onSave(supplier);
+    const handleSaveSupplier = async (supplier: Supplier) => {
+        await onSave(supplier);
         setIsModalOpen(false);
     };
 
@@ -97,7 +95,11 @@ const SuppliersView: React.FC<SuppliersViewProps> = ({ suppliers, onSave, onDele
                                             <Button variant="secondary" size="sm" onClick={() => handleOpenModal(supplier)}><EditIcon className="w-4 h-4"/></Button>
                                         )}
                                         {permissions['proveedores.delete'] && (
-                                            <Button variant="danger" size="sm" onClick={() => onDelete(supplier.id)}><TrashIcon className="w-4 h-4"/></Button>
+                                            <Button variant="danger" size="sm" onClick={async () => {
+                                                if (window.confirm('¿Está seguro de que desea eliminar este proveedor? Esta acción no se puede deshacer.')) {
+                                                    await onDelete(supplier.id);
+                                                }
+                                            }}><TrashIcon className="w-4 h-4"/></Button>
                                         )}
                                     </td>
                                 </tr>

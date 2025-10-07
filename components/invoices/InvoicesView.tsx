@@ -27,8 +27,8 @@ interface InvoicesViewProps {
     clients: Client[];
     categories: Category[];
     userPermissions: Permissions;
-    onUpdateStatuses: (invoiceId: string, newStatuses: { paymentStatus?: PaymentStatus, shippingStatus?: ShippingStatus, status?: MasterStatus }) => void;
-    onDeleteInvoice: (invoiceId: string) => void;
+    onUpdateStatuses: (invoiceId: string, newStatuses: { paymentStatus?: PaymentStatus, shippingStatus?: ShippingStatus, status?: MasterStatus }) => Promise<void>;
+    onDeleteInvoice: (invoiceId: string) => Promise<void>;
     companyInfo: CompanyInfo;
     initialFilter?: { type: string; value: string } | null;
 }
@@ -161,7 +161,7 @@ const InvoicesView: React.FC<InvoicesViewProps> = ({ invoices, clients, categori
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                         <select
                                             value={invoice.paymentStatus}
-                                            onChange={(e) => onUpdateStatuses(invoice.id, { paymentStatus: e.target.value as PaymentStatus })}
+                                            onChange={async (e) => await onUpdateStatuses(invoice.id, { paymentStatus: e.target.value as PaymentStatus })}
                                             disabled={!userPermissions['invoices.changeStatus'] || invoice.status === 'Anulada'}
                                             className={`block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs p-1.5 ${paymentStatusColors[invoice.paymentStatus]}`}
                                         >
@@ -171,7 +171,7 @@ const InvoicesView: React.FC<InvoicesViewProps> = ({ invoices, clients, categori
                                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                                         <select
                                             value={invoice.shippingStatus}
-                                            onChange={(e) => onUpdateStatuses(invoice.id, { shippingStatus: e.target.value as ShippingStatus })}
+                                            onChange={async (e) => await onUpdateStatuses(invoice.id, { shippingStatus: e.target.value as ShippingStatus })}
                                             disabled={!userPermissions['invoices.changeStatus'] || invoice.status === 'Anulada'}
                                             className={`block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-xs p-1.5 ${shippingStatusColors[invoice.shippingStatus]}`}
                                         >
@@ -187,15 +187,19 @@ const InvoicesView: React.FC<InvoicesViewProps> = ({ invoices, clients, categori
                                             <Button variant="secondary" size="sm" onClick={() => handleEdit(invoice.id)}><EditIcon className="w-4 h-4" /></Button>
                                         )}
                                         {userPermissions['invoices.void'] && invoice.status === 'Activa' && (
-                                            <Button variant="danger" size="sm" onClick={() => onUpdateStatuses(invoice.id, { status: 'Anulada' })}>Anular</Button>
+                                            <Button variant="danger" size="sm" onClick={async () => await onUpdateStatuses(invoice.id, { status: 'Anulada' })}>Anular</Button>
                                         )}
                                         {invoice.status === 'Anulada' && (
                                             <>
                                                 {userPermissions['invoices.edit'] && (
-                                                     <Button variant="secondary" size="sm" onClick={() => onUpdateStatuses(invoice.id, { status: 'Activa' })}>Reactivar</Button>
+                                                     <Button variant="secondary" size="sm" onClick={async () => await onUpdateStatuses(invoice.id, { status: 'Activa' })}>Reactivar</Button>
                                                 )}
                                                 {userPermissions['invoices.delete'] && (
-                                                    <Button variant="danger" size="sm" onClick={() => onDeleteInvoice(invoice.id)}>
+                                                    <Button variant="danger" size="sm" onClick={async () => {
+                                                        if (window.confirm('¿Está seguro de que desea eliminar permanentemente esta factura anulada? Esta acción no se puede deshacer.')) {
+                                                            await onDeleteInvoice(invoice.id);
+                                                        }
+                                                    }}>
                                                         <TrashIcon className="w-4 h-4"/>
                                                     </Button>
                                                 )}

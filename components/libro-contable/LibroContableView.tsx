@@ -28,12 +28,12 @@ interface LibroContableViewProps {
     companyInfo: CompanyInfo;
     suppliers: Supplier[];
     asientosManuales: AsientoManual[];
-    onSaveExpense: (expense: Expense) => void;
-    onDeleteExpense: (expenseId: string) => void;
-    onSaveExpenseCategory: (category: ExpenseCategory) => void;
-    onDeleteExpenseCategory: (categoryId: string) => void;
-    onSaveAsientoManual: (asiento: AsientoManual) => void;
-    onDeleteAsientoManual: (asientoId: string) => void;
+    onSaveExpense: (expense: Expense) => Promise<void>;
+    onDeleteExpense: (expenseId: string) => Promise<void>;
+    onSaveExpenseCategory: (category: ExpenseCategory) => Promise<void>;
+    onDeleteExpenseCategory: (categoryId: string) => Promise<void>;
+    onSaveAsientoManual: (asiento: AsientoManual) => Promise<void>;
+    onDeleteAsientoManual: (asientoId: string) => Promise<void>;
     permissions: Permissions;
     currentUser: User;
 }
@@ -171,13 +171,6 @@ const LibroContableView: React.FC<LibroContableViewProps> = (props) => {
                     icon={ArrowsRightLeftIcon}
                     onClick={() => setActiveModal('transactions')}
                     colorVariant="blue"
-                />
-                <AccountingTile
-                    title="Asiento Manual"
-                    description="Registrar asientos contables manualmente."
-                    icon={BookOpenIcon}
-                    onClick={() => setActiveModal('asientoManual')}
-                    colorVariant="green"
                 />
                  <AccountingTile
                     title="Libro Diario"

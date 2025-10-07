@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState } from 'react';
 import { PaymentMethod, Permissions } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -11,8 +7,8 @@ import PaymentMethodFormModal from './PaymentMethodFormModal';
 
 interface PaymentMethodsViewProps {
     paymentMethods: PaymentMethod[];
-    onSave: (paymentMethod: PaymentMethod) => void;
-    onDelete: (paymentMethodId: string) => void;
+    onSave: (paymentMethod: PaymentMethod) => Promise<void>;
+    onDelete: (paymentMethodId: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -35,8 +31,8 @@ const PaymentMethodsView: React.FC<PaymentMethodsViewProps> = ({ paymentMethods,
         setIsModalOpen(true);
     };
 
-    const handleSave = (paymentMethod: PaymentMethod) => {
-        onSave(paymentMethod);
+    const handleSave = async (paymentMethod: PaymentMethod) => {
+        await onSave(paymentMethod);
         setIsModalOpen(false);
     };
     
@@ -109,7 +105,11 @@ const PaymentMethodsView: React.FC<PaymentMethodsViewProps> = ({ paymentMethods,
                                     <Button variant="secondary" size="sm" onClick={() => handleOpenModal(pm)}><EditIcon className="w-4 h-4"/></Button>
                                 )}
                                 {permissions['payment-methods.delete'] && (
-                                    <Button variant="danger" size="sm" onClick={() => onDelete(pm.id)}><TrashIcon className="w-4 h-4"/></Button>
+                                    <Button variant="danger" size="sm" onClick={async () => {
+                                        if (window.confirm('¿Está seguro de que desea eliminar esta forma de pago? Esta acción no se puede deshacer.')) {
+                                            await onDelete(pm.id);
+                                        }
+                                    }}><TrashIcon className="w-4 h-4"/></Button>
                                 )}
                             </div>
                         </div>

@@ -17,9 +17,7 @@ const initialClientState: Partial<Client> = { id: '', idNumber: '', name: '', ph
 const initialMerchandise: Merchandise = { quantity: 1, weight: 0, length: 0, width: 0, height: 0, description: '', categoryId: '' };
 const initialFinancials: Financials = { freight: 0, insuranceCost: 0, handling: 0, discount: 0, subtotal: 0, ipostel: 0, iva: 0, igtf: 0, total: 0 };
 
-interface InvoiceFormProps {
-    onSave: (invoice: Invoice | Omit<Invoice, 'status' | 'paymentStatus' | 'shippingStatus'>) => Promise<Invoice | null>;
-    invoice?: Invoice | null;
+type BaseFormProps = {
     companyInfo: CompanyInfo;
     categories: Category[];
     clients: Client[];
@@ -27,7 +25,19 @@ interface InvoiceFormProps {
     shippingTypes: ShippingType[];
     paymentMethods: PaymentMethod[];
     currentUser: User;
-}
+};
+
+type CreateFormProps = BaseFormProps & {
+    invoice?: null;
+    onSave: (invoice: Omit<Invoice, 'status' | 'paymentStatus' | 'shippingStatus'>) => Promise<Invoice | null>;
+};
+
+type EditFormProps = BaseFormProps & {
+    invoice: Invoice;
+    onSave: (invoice: Invoice) => Promise<Invoice | null>;
+};
+
+type InvoiceFormProps = CreateFormProps | EditFormProps;
 
 const InvoiceForm: React.FC<InvoiceFormProps> = ({ onSave, invoice = null, companyInfo, categories, clients, offices, shippingTypes, paymentMethods, currentUser }) => {
     
@@ -277,7 +287,14 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onSave, invoice = null, compa
             return;
         }
         const invoiceObject = buildInvoiceObject();
-        const savedInvoice = await onSave(invoiceObject);
+        
+        let savedInvoice: Invoice | null = null;
+        if (invoice) { // Edit mode
+            savedInvoice = await (onSave as EditFormProps['onSave'])(invoiceObject as Invoice);
+        } else { // Create mode
+            savedInvoice = await (onSave as CreateFormProps['onSave'])(invoiceObject as Omit<Invoice, 'status' | 'paymentStatus' | 'shippingStatus'>);
+        }
+
         if (savedInvoice) {
             window.location.hash = 'invoices';
         }
@@ -323,7 +340,12 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({ onSave, invoice = null, compa
         
         const invoiceObject = buildInvoiceObject();
         
-        const savedInvoice = await onSave(invoiceObject as any); 
+        let savedInvoice: Invoice | null = null;
+        if (invoice) { // Edit mode
+            savedInvoice = await (onSave as EditFormProps['onSave'])(invoiceObject as Invoice);
+        } else { // Create mode
+            savedInvoice = await (onSave as CreateFormProps['onSave'])(invoiceObject as Omit<Invoice, 'status' | 'paymentStatus' | 'shippingStatus'>);
+        }
 
         if (savedInvoice) {
             await sendToFiscalPrinter(savedInvoice);

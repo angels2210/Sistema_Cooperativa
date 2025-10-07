@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, Role, Permissions } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -10,9 +9,9 @@ import RoleFormModal from '../configuracion/RoleFormModal';
 interface RoleManagementProps {
     users: User[];
     roles: Role[];
-    onSaveRole: (role: Role) => void;
-    onDeleteRole: (roleId: string) => void;
-    onUpdateRolePermissions: (roleId: string, permissions: Permissions) => void;
+    onSaveRole: (role: Role) => Promise<void>;
+    onDeleteRole: (roleId: string) => Promise<void>;
+    onUpdateRolePermissions: (roleId: string, permissions: Permissions) => Promise<void>;
 }
 
 const RoleManagement: React.FC<RoleManagementProps> = ({ users, roles, onSaveRole, onDeleteRole, onUpdateRolePermissions }) => {
@@ -27,8 +26,8 @@ const RoleManagement: React.FC<RoleManagementProps> = ({ users, roles, onSaveRol
         setIsRoleFormModalOpen(true);
     };
     
-    const handleSaveRoleEntity = (role: Role) => {
-        onSaveRole(role);
+    const handleSaveRoleEntity = async (role: Role) => {
+        await onSaveRole(role);
         setIsRoleFormModalOpen(false);
     };
 
@@ -37,8 +36,8 @@ const RoleManagement: React.FC<RoleManagementProps> = ({ users, roles, onSaveRol
         setIsRoleModalOpen(true);
     };
 
-    const handleSaveRolePermissions = (roleId: string, permissions: any) => {
-        onUpdateRolePermissions(roleId, permissions);
+    const handleSaveRolePermissions = async (roleId: string, permissions: any) => {
+        await onUpdateRolePermissions(roleId, permissions);
         setIsRoleModalOpen(false);
     };
     
@@ -70,7 +69,11 @@ const RoleManagement: React.FC<RoleManagementProps> = ({ users, roles, onSaveRol
                                 <Button size="sm" variant="secondary" onClick={() => handleOpenRoleFormModal(role)} title="Editar Nombre del Rol">
                                     <EditIcon className="w-4 h-4" />
                                 </Button>
-                                <Button size="sm" variant="danger" onClick={() => onDeleteRole(role.id)} disabled={isRoleInUse(role.id)} title={isRoleInUse(role.id) ? 'Rol en uso, no se puede eliminar' : 'Eliminar rol'}>
+                                <Button size="sm" variant="danger" onClick={async () => {
+                                    if (window.confirm(`¿Está seguro de que desea eliminar el rol '${role.name}'? Esta acción no se puede deshacer.`)) {
+                                        await onDeleteRole(role.id);
+                                    }
+                                }} disabled={isRoleInUse(role.id)} title={isRoleInUse(role.id) ? 'Rol en uso, no se puede eliminar' : 'Eliminar rol'}>
                                     <TrashIcon className="w-4 h-4" />
                                 </Button>
                             </div>

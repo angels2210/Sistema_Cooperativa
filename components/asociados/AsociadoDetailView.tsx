@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Asociado, Vehicle, Certificado, Permissions } from '../../types';
 import Button from '../ui/Button';
@@ -8,15 +9,15 @@ import CertificadoVehiculoTab from './CertificadoVehiculoTab';
 interface AsociadoDetailViewProps {
     asociado: Asociado;
     onBack: () => void;
-    onSaveAsociado: (asociado: Asociado) => void;
+    onSaveAsociado: (asociado: Asociado) => Promise<void>;
 
     vehicles: Vehicle[];
-    onSaveVehicle: (vehicle: Vehicle) => void;
-    onDeleteVehicle: (vehicleId: string) => void;
+    onSaveVehicle: (vehicle: Vehicle) => Promise<void>;
+    onDeleteVehicle: (vehicleId: string) => Promise<void>;
     
     certificados: Certificado[];
-    onSaveCertificado: (certificado: Certificado) => void;
-    onDeleteCertificado: (certificadoId: string) => void;
+    onSaveCertificado: (certificado: Certificado) => Promise<void>;
+    onDeleteCertificado: (certificadoId: string) => Promise<void>;
 
     permissions: Permissions;
 }
@@ -28,8 +29,8 @@ const AsociadoDetailView: React.FC<AsociadoDetailViewProps> = (props) => {
     const [activeTab, setActiveTab] = useState<Tab>('datos');
     const [currentAsociado, setCurrentAsociado] = useState(asociado);
 
-    const handleSaveAsociado = (updatedAsociado: Asociado) => {
-        props.onSaveAsociado(updatedAsociado);
+    const handleSaveAsociado = async (updatedAsociado: Asociado) => {
+        await props.onSaveAsociado(updatedAsociado);
         setCurrentAsociado(updatedAsociado);
     };
 

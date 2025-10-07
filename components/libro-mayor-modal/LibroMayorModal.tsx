@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import Modal from '../ui/Modal';
@@ -148,7 +149,7 @@ const LibroMayorModal: React.FC<LibroMayorModalProps> = ({ isOpen, onClose, tran
 
     const handleExport = () => {
         const sheetData: any[][] = [];
-        // FIX: Add explicit type 'LedgerAccount' to 'account' parameter to resolve 'unknown' type error.
+        // FIX: Add explicit type to 'account' parameter to resolve 'unknown' type error.
         Object.values(ledger).forEach((account: LedgerAccount) => {
             sheetData.push([account.accountName]); // Account Title
             sheetData.push(["Fecha", "Descripción", "Debe", "Haber", "Saldo"]); // Headers

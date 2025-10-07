@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Category, Permissions } from '../../types';
 import Card, { CardHeader, CardTitle } from '../ui/Card';
@@ -42,8 +41,8 @@ const CategoryFormModal: React.FC<{
 
 interface CategoryViewProps {
     categories: Category[];
-    onSave: (category: Category) => void;
-    onDelete: (id: string) => void;
+    onSave: (category: Category) => Promise<void>;
+    onDelete: (id: string) => Promise<void>;
     permissions: Permissions;
 }
 
@@ -56,8 +55,8 @@ const CategoryView: React.FC<CategoryViewProps> = ({ categories, onSave, onDelet
         setIsModalOpen(true);
     };
     
-    const handleSaveCategory = (category: Category) => {
-        onSave(category);
+    const handleSaveCategory = async (category: Category) => {
+        await onSave(category);
         setIsModalOpen(false);
     };
     
@@ -97,7 +96,11 @@ const CategoryView: React.FC<CategoryViewProps> = ({ categories, onSave, onDelet
                                             <Button variant="secondary" size="sm" onClick={() => handleOpenModal(cat)}><EditIcon className="w-4 h-4"/></Button>
                                         )}
                                         {permissions['categories.delete'] && (
-                                            <Button variant="danger" size="sm" onClick={() => onDelete(cat.id)}><TrashIcon className="w-4 h-4"/></Button>
+                                            <Button variant="danger" size="sm" onClick={async () => {
+                                                if (window.confirm('¿Está seguro de que desea eliminar esta categoría? Esta acción no se puede deshacer.')) {
+                                                    await onDelete(cat.id);
+                                                }
+                                            }}><TrashIcon className="w-4 h-4"/></Button>
                                         )}
                                     </td>
                                 </tr>
